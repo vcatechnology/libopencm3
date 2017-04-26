@@ -115,6 +115,9 @@ static void usb_control_send_chunk(usbd_device *usbd_dev)
 		usbd_dev->control_state.needs_zlp = false;
 		usbd_dev->control_state.ctrl_len = 0;
 		usbd_dev->control_state.ctrl_buf = NULL;
+
+		if (usbd_dev->control_state.state == LAST_DATA_IN)
+			usbd_ep_nak_set(usbd_dev, 0, 1);
 	}
 }
 
@@ -293,6 +296,7 @@ void _usbd_control_in(usbd_device *usbd_dev, uint8_t ea)
 		usb_control_send_chunk(usbd_dev);
 		break;
 	case LAST_DATA_IN:
+		usbd_ep_nak_set(usbd_dev, 0, 0);
 		usbd_dev->control_state.state = STATUS_OUT;
 		break;
 	case STATUS_IN:
